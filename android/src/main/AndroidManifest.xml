@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!--
+        The Kisi ST2U SDK declares its own permissions in its AAR manifest.
+        We only list here what is strictly required at the plugin level.
+
+        Tap-to-Unlock via NFC requires no extra runtime permissions beyond
+        what the SDK AAR declares.
+
+        Motion Sense requires Bluetooth + Location runtime permissions.
+        Those are declared by the SDK's AAR manifest automatically.
+        The host app is responsible for requesting them at runtime.
+    -->
+</manifest>

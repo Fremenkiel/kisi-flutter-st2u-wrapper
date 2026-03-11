@@ -1,0 +1,62 @@
+group 'com.kisi.st2u'
+version '1.0'
+
+buildscript {
+    ext.kotlin_version = '1.9.0'
+    repositories {
+        google()
+        mavenCentral()
+    }
+
+    dependencies {
+        classpath 'com.android.tools.build:gradle:8.1.0'
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+    }
+}
+
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+        // JitPack for blessed-android BLE library used by the Kisi SDK
+        maven { url 'https://jitpack.io' }
+    }
+}
+
+apply plugin: 'com.android.library'
+apply plugin: 'kotlin-android'
+
+android {
+    compileSdk 35
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    kotlinOptions {
+        jvmTarget = '17'
+    }
+
+    defaultConfig {
+        minSdk 21
+    }
+
+    namespace 'com.kisi.st2u'
+}
+
+dependencies {
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+
+    // ── Kisi ST2U AAR ──────────────────────────────────────────────────────
+    // The AAR is downloaded by the setup script (scripts/setup.sh).
+    // Run `dart run kisi_st2u:setup` (or `sh scripts/setup.sh`) before building.
+    implementation fileTree(dir: 'libs', include: ['*.aar'])
+
+    // ── Required transitive dependencies of the Kisi ST2U SDK ─────────────
+    implementation 'at.favre.lib:hkdf:1.1.0'
+    implementation 'com.github.weliem:blessed-android:2.5.0'
+    implementation 'io.reactivex.rxjava3:rxjava:3.1.8'
+    // Beacon tracking (for reader restrictions / in-app unlock proximity proof)
+    implementation 'aga.android:luch:0.3.1'
+}
