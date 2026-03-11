@@ -14,8 +14,15 @@ buildscript {
     }
 }
 
+// Resolve the plugin's android directory regardless of where the root project is.
+// buildFile is the documented Gradle API for the current build script's path.
+def pluginDir = buildFile.parentFile
+
 allprojects {
     repositories {
+        // Local Maven repo that holds the Kisi ST2U SDK AAR.
+        // Populated by scripts/setup.sh (or `dart run kisi_st2u:setup`).
+        maven { url "$pluginDir/local-maven" }
         google()
         mavenCentral()
         // JitPack for blessed-android BLE library used by the Kisi SDK
@@ -39,7 +46,7 @@ android {
     }
 
     defaultConfig {
-        minSdk 21
+        minSdk 23
     }
 
     namespace 'com.kisi.st2u'
@@ -49,14 +56,14 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
 
     // ── Kisi ST2U AAR ──────────────────────────────────────────────────────
-    // The AAR is downloaded by the setup script (scripts/setup.sh).
+    // The AAR is served from android/local-maven, populated by setup.sh.
     // Run `dart run kisi_st2u:setup` (or `sh scripts/setup.sh`) before building.
-    implementation fileTree(dir: 'libs', include: ['*.aar'])
+    implementation 'de.kisi.android:st2u:0.16'
 
     // ── Required transitive dependencies of the Kisi ST2U SDK ─────────────
     implementation 'at.favre.lib:hkdf:1.1.0'
     implementation 'com.github.weliem:blessed-android:2.5.0'
     implementation 'io.reactivex.rxjava3:rxjava:3.1.8'
     // Beacon tracking (for reader restrictions / in-app unlock proximity proof)
-    implementation 'aga.android:luch:0.3.1'
+    implementation 'com.github.agap:luch:0.3.1'
 }

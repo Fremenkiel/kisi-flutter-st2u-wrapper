@@ -3,15 +3,15 @@ package com.kisi.st2u
 import android.content.Context
 import android.os.Handler
 import android.os.Looper
-import com.kisi.st2u.sdk.KisiBeaconTracker
-import com.kisi.st2u.sdk.MotionSenseSettings
-import com.kisi.st2u.sdk.MotionSenseStartException
-import com.kisi.st2u.sdk.MotionSenseStarter
-import com.kisi.st2u.sdk.SecureUnlockConfiguration
-import com.kisi.st2u.sdk.SecureUnlockLogger
-import com.kisi.st2u.sdk.model.Login
-import com.kisi.st2u.sdk.model.UnlockError
-import com.kisi.st2u.sdk.model.UnlockSource
+import de.kisi.android.nearby.KisiBeaconTracker
+import de.kisi.android.service.ble.MotionSenseSettings
+import de.kisi.android.service.ble.start.MotionSenseStarter
+import de.kisi.android.service.ble.start.MotionSenseStarter.MotionSenseStartException
+import de.kisi.android.SecureUnlockConfiguration
+import de.kisi.android.SecureUnlockLogger
+import de.kisi.android.st2u.Login
+import de.kisi.android.st2u.UnlockError
+import de.kisi.android.UnlockSource
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
@@ -77,8 +77,7 @@ class KisiSt2uPlugin : FlutterPlugin, MethodCallHandler {
                     onUnlockCompleteCallback = { source, error ->
                         val sourceStr = when (source) {
                             UnlockSource.NFC -> "nfc"
-                            UnlockSource.MOTION_SENSE -> "motionSense"
-                            UnlockSource.IN_APP -> "inApp"
+                            UnlockSource.BLE -> "motionSense"
                         }
                         mainHandler.post {
                             if (error == UnlockError.NONE) {

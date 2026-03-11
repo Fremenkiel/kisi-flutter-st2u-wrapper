@@ -49,23 +49,46 @@ else
   echo "[iOS] SecureAccess.xcframework downloaded successfully."
 fi
 
-# ── Android: download st2u AAR ─────────────────────────────────────────────
-ANDROID_LIBS_DIR="$ROOT_DIR/android/libs"
-ANDROID_AAR="$ANDROID_LIBS_DIR/st2u-$ANDROID_VERSION.aar"
+# ── Android: install st2u AAR into a local Maven repository ─────────────────
+# The AAR cannot be a raw fileTree dependency when building a library AAR,
+# so we serve it via a local Maven repo at android/local-maven.
+ANDROID_MAVEN_DIR="$ROOT_DIR/android/local-maven"
+ANDROID_AAR_DIR="$ANDROID_MAVEN_DIR/de/kisi/android/st2u/$ANDROID_VERSION"
+ANDROID_AAR="$ANDROID_AAR_DIR/st2u-$ANDROID_VERSION.aar"
+ANDROID_POM="$ANDROID_AAR_DIR/st2u-$ANDROID_VERSION.pom"
 
 if [ -f "$ANDROID_AAR" ]; then
-  echo "[Android] st2u-$ANDROID_VERSION.aar already present – skipping download."
+  echo "[Android] st2u-$ANDROID_VERSION.aar already present in local-maven – skipping download."
 else
   echo "[Android] Downloading st2u-$ANDROID_VERSION.aar ..."
-  mkdir -p "$ANDROID_LIBS_DIR"
 
-  # Remove older AAR versions before downloading
-  rm -f "$ANDROID_LIBS_DIR"/st2u-*.aar
+  # Remove any stale versions before installing the new one
+  rm -rf "$ANDROID_MAVEN_DIR/de/kisi/android/st2u"
+  mkdir -p "$ANDROID_AAR_DIR"
 
-  AAR_URL="https://github.com/kisi-inc/kisi-android-st2u-sdk-public/releases/download/$ANDROID_VERSION/st2u-$ANDROID_VERSION.aar"
-  curl -fL --progress-bar -o "$ANDROID_AAR" "$AAR_URL"
+  # Check for an existing download in the old libs/ location and reuse it
+  LEGACY_AAR="$ROOT_DIR/android/libs/st2u-$ANDROID_VERSION.aar"
+  if [ -f "$LEGACY_AAR" ]; then
+    cp "$LEGACY_AAR" "$ANDROID_AAR"
+    echo "[Android] Reused existing download from android/libs/."
+  else
+    AAR_URL="https://github.com/kisi-inc/kisi-android-st2u-sdk-public/releases/download/$ANDROID_VERSION/st2u-$ANDROID_VERSION.aar"
+    curl -fL --progress-bar -o "$ANDROID_AAR" "$AAR_URL"
+  fi
 
-  echo "[Android] st2u-$ANDROID_VERSION.aar downloaded successfully."
+  # Generate the minimal POM required by the local Maven resolver
+  cat > "$ANDROID_POM" <<EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<project>
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>de.kisi.android</groupId>
+  <artifactId>st2u</artifactId>
+  <version>$ANDROID_VERSION</version>
+  <packaging>aar</packaging>
+</project>
+EOF
+
+  echo "[Android] st2u-$ANDROID_VERSION.aar installed to local-maven successfully."
 fi
 
 echo ""
