@@ -28,14 +28,16 @@ internal class KisiSt2uInitProvider : ContentProvider() {
             .getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
             .getInt(KEY_CLIENT_ID, -1)
 
-        if (clientId != -1) {
-            SecureUnlockConfiguration.init(
-                context = ctx,
-                clientId = clientId,
-                fetchLoginCallback = { Maybe.empty() },
-                onUnlockCompleteCallback = { _, _ -> },
-            )
-        }
+        // Always initialize — even with a default clientId of 0 — so that
+        // MotionSenseSettings.preferences is never uninitialized when
+        // DeviceRebootReceiver fires before Flutter starts. The real clientId
+        // and login callback are supplied when Flutter calls initialize().
+        SecureUnlockConfiguration.init(
+            context = ctx,
+            clientId = clientId.takeIf { it != -1 } ?: 0,
+            fetchLoginCallback = { Maybe.empty() },
+            onUnlockCompleteCallback = { _, _ -> },
+        )
         return true
     }
 
