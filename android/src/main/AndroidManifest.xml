@@ -11,4 +11,15 @@
         Those are declared by the SDK's AAR manifest automatically.
         The host app is responsible for requesting them at runtime.
     -->
+    <application>
+        <!--
+            Initializes SecureUnlockConfiguration early — before any BroadcastReceiver
+            fires (e.g. DeviceRebootReceiver on BOOT_COMPLETED) — so that
+            MotionSenseSettings.preferences is never accessed uninitialized.
+        -->
+        <provider
+            android:name=".KisiSt2uInitProvider"
+            android:authorities="${applicationId}.kisi_st2u_init"
+            android:exported="false" />
+    </application>
 </manifest>

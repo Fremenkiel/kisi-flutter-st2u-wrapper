@@ -1,6 +1,7 @@
 package com.kisi.st2u
 
 import android.content.Context
+import android.content.Context.MODE_PRIVATE
 import android.os.Handler
 import android.os.Looper
 import de.kisi.android.nearby.KisiBeaconTracker
@@ -55,6 +56,11 @@ class KisiSt2uPlugin : FlutterPlugin, MethodCallHandler {
             "initialize" -> {
                 val clientId = call.argument<Int>("clientId")
                     ?: return result.error("INVALID_ARGS", "clientId is required", null)
+
+                // Persist so KisiSt2uInitProvider can re-initialize on next boot
+                // before Flutter starts.
+                appContext.getSharedPreferences(KisiSt2uInitProvider.PREFS_NAME, Context.MODE_PRIVATE)
+                    .edit().putInt(KisiSt2uInitProvider.KEY_CLIENT_ID, clientId).apply()
 
                 SecureUnlockConfiguration.init(
                     context = appContext,
