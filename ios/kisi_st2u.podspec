@@ -6,7 +6,7 @@ Pod::Spec.new do |s|
     Flutter plugin wrapping the Kisi SecureAccess XCFramework for NFC tap-to-unlock
     and BLE beacon proximity detection on iOS.
   DESC
-  s.homepage         = 'https://github.com/Fremenkiel/kisi-flutter-st2u-wrapper'
+  s.homepage         = 'https://forge.bookingboard.io/booking-board/kisi-flutter-st2u.git'
   s.license          = { :type => 'MIT', :file => '../LICENSE' }
   s.author           = { 'Kisi' => 'sdks@kisi.io' }
   s.source           = { :path => '.' }
