@@ -20,9 +20,6 @@ def pluginDir = buildFile.parentFile
 
 allprojects {
     repositories {
-        // Local Maven repo that holds the Kisi ST2U SDK AAR.
-        // Populated by scripts/setup.sh (or `dart run kisi_st2u:setup`).
-        maven { url "$pluginDir/local-maven" }
         google()
         mavenCentral()
         // JitPack for blessed-android BLE library used by the Kisi SDK
@@ -56,9 +53,9 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
 
     // ── Kisi ST2U AAR ──────────────────────────────────────────────────────
-    // The AAR is served from android/local-maven, populated by setup.sh.
-    // Run `dart run kisi_st2u:setup` (or `sh scripts/setup.sh`) before building.
-    implementation 'de.kisi.android:st2u:0.16'
+    // Referenced directly by file path so no local Maven repo is needed.
+    // Run `sh scripts/setup.sh` to download the AAR into android/libs/.
+    implementation fileTree(dir: "${pluginDir}/libs", include: ['st2u-*.aar'])
 
     // ── Required transitive dependencies of the Kisi ST2U SDK ─────────────
     implementation 'at.favre.lib:hkdf:1.1.0'

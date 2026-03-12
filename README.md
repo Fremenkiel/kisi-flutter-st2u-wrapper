@@ -17,7 +17,7 @@ A Flutter plugin that wraps the Kisi Straight-to-Unlock (ST2U) native SDKs for i
 | Platform | Minimum version |
 |---|---|
 | iOS | 13.0 |
-| Android | 5.0 (API 21) |
+| Android | 5.0 (API 23) |
 | Flutter | 3.10+ |
 | Dart | 3.0+ |
 
@@ -40,6 +40,24 @@ sh scripts/setup.sh --ios-tag 0.8.0 --android-version 0.16
 This will:
 - Clone the `SecureAccess.xcframework` from [`kisi-inc/kisi-ios-st2u-framework`](https://github.com/kisi-inc/kisi-ios-st2u-framework) into `ios/Frameworks/`
 - Download `st2u-X.XX.aar` from [`kisi-inc/kisi-android-st2u-sdk-public`](https://github.com/kisi-inc/kisi-android-st2u-sdk-public/releases) into `android/libs/`
+
+> **Note:** When this plugin is consumed as a `git:` dependency, Flutter resolves it into the pub cache rather than using your local clone. Run the setup script against the cached copy after `flutter pub get`:
+> ```sh
+> sh ~/.pub-cache/git/kisi-flutter-st2u-<hash>/scripts/setup.sh
+> ```
+
+### Using this plugin as a git dependency
+
+When the host app references this plugin via a `git:` entry in `pubspec.yaml`, Flutter resolves it into the pub cache rather than using the local directory. The setup script must therefore be run against the **cached copy**, not the local clone. After `flutter pub get`, find the cached path and run setup from there:
+
+```sh
+# Find the cached plugin path
+flutter pub deps | grep kisi_st2u
+# or look in ~/.pub-cache/git/
+
+# Run setup against the cached copy (replace the hash with the actual cache directory name)
+sh ~/.pub-cache/git/kisi-flutter-st2u-<hash>/scripts/setup.sh
+```
 
 ---
 
@@ -67,7 +85,11 @@ Request permissions at runtime before calling `startTapToAccess()`:
 
 ```swift
 // AppDelegate.swift or equivalent
-CLLocationManager().requestAlwaysAuthorization()
+private let locationManager = CLLocationManager()
+
+override func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+    locationManager.requestAlwaysAuthorization()
+}
 ```
 
 ---
@@ -81,6 +103,20 @@ The SDK's AAR manifest automatically declares all required permissions. Your app
 - `POST_NOTIFICATIONS` (Android 13+)
 
 For persistent Motion Sense, direct users to **Settings → Battery → Unrestricted** for your app.
+
+### Repository setup
+
+The Kisi AAR is referenced directly by file path in the plugin's `build.gradle` (no local Maven repo needed). You only need to add JitPack to your app's `android/build.gradle` for the transitive dependencies (`blessed-android`, `luch`):
+
+```groovy
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+        maven { url 'https://jitpack.io' }
+    }
+}
+```
 
 ---
 
