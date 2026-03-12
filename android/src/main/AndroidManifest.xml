@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
     <!--
         The Kisi ST2U SDK declares its own permissions in its AAR manifest.
         We only list here what is strictly required at the plugin level.
@@ -21,5 +22,24 @@
             android:name=".KisiSt2uInitProvider"
             android:authorities="${applicationId}.kisi_st2u_init"
             android:exported="false" />
+
+        <!--
+            Remove the SDK's DeviceRebootReceiver, which crashes on boot when BLE
+            or location permissions are not yet accessible, because it lets
+            MotionSenseStartException propagate uncaught out of onReceive().
+            KisiSafeDeviceRebootReceiver replaces it with identical behaviour but
+            catches the exception so a boot-time permission gap is non-fatal.
+        -->
+        <receiver
+            android:name="de.kisi.android.service.ble.start.DeviceRebootReceiver"
+            tools:node="remove" />
+
+        <receiver
+            android:name=".KisiSafeDeviceRebootReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
     </application>
 </manifest>
