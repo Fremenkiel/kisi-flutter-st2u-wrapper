@@ -49,20 +49,41 @@ else
   echo "[iOS] SecureAccess.xcframework downloaded successfully."
 fi
 
-# ── Android: download st2u AAR into android/libs/ ───────────────────────────
-# The AAR is referenced directly by file path in the plugin's build.gradle,
-# so no local Maven repo setup is required.
-ANDROID_LIBS_DIR="$ROOT_DIR/android/libs"
-ANDROID_AAR="$ANDROID_LIBS_DIR/st2u-$ANDROID_VERSION.aar"
+# ── Android: install st2u AAR into a local Maven repository ─────────────────
+# Direct .aar file dependencies are not supported when building a library AAR
+# (AGP restriction), so the AAR must be served via a local Maven repo.
+# Gradle 8 does not propagate allprojects{} from plugin subprojects, so the
+# host app must add the local-maven path explicitly — see README.
+ANDROID_MAVEN_DIR="$ROOT_DIR/android/local-maven"
+ANDROID_AAR_DIR="$ANDROID_MAVEN_DIR/de/kisi/android/st2u/$ANDROID_VERSION"
+ANDROID_AAR="$ANDROID_AAR_DIR/st2u-$ANDROID_VERSION.aar"
+ANDROID_POM="$ANDROID_AAR_DIR/st2u-$ANDROID_VERSION.pom"
 
 if [ -f "$ANDROID_AAR" ]; then
-  echo "[Android] st2u-$ANDROID_VERSION.aar already present – skipping download."
+  echo "[Android] st2u-$ANDROID_VERSION.aar already present in local-maven – skipping download."
 else
   echo "[Android] Downloading st2u-$ANDROID_VERSION.aar ..."
-  mkdir -p "$ANDROID_LIBS_DIR"
+
+  # Remove any stale versions before installing the new one
+  rm -rf "$ANDROID_MAVEN_DIR/de/kisi/android/st2u"
+  mkdir -p "$ANDROID_AAR_DIR"
+
   AAR_URL="https://github.com/kisi-inc/kisi-android-st2u-sdk-public/releases/download/$ANDROID_VERSION/st2u-$ANDROID_VERSION.aar"
   curl -fL --progress-bar -o "$ANDROID_AAR" "$AAR_URL"
-  echo "[Android] st2u-$ANDROID_VERSION.aar downloaded successfully."
+
+  # Generate the minimal POM required by the local Maven resolver
+  cat > "$ANDROID_POM" <<EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<project>
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>de.kisi.android</groupId>
+  <artifactId>st2u</artifactId>
+  <version>$ANDROID_VERSION</version>
+  <packaging>aar</packaging>
+</project>
+EOF
+
+  echo "[Android] st2u-$ANDROID_VERSION.aar installed to local-maven successfully."
 fi
 
 echo ""

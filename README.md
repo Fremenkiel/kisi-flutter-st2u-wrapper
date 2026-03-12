@@ -106,16 +106,29 @@ For persistent Motion Sense, direct users to **Settings → Battery → Unrestri
 
 ### Repository setup
 
-The Kisi AAR is referenced directly by file path in the plugin's `build.gradle` (no local Maven repo needed). You only need to add JitPack to your app's `android/build.gradle` for the transitive dependencies (`blessed-android`, `luch`):
+AGP requires the Kisi AAR to be served from a Maven repository (direct `.aar` file deps are forbidden when building a library AAR). The plugin uses a `local-maven` directory populated by `setup.sh`, but Gradle 8 does not propagate `allprojects { repositories {} }` from plugin subprojects into the host app. Add both JitPack and the local-maven path explicitly to your app's `android/build.gradle`:
 
 ```groovy
 allprojects {
     repositories {
         google()
         mavenCentral()
+        // Required for kisi_st2u transitive dependencies (blessed-android, luch)
         maven { url 'https://jitpack.io' }
+        // Kisi ST2U local-maven — resolved dynamically from the pub cache
+        def pubCacheDir = System.getenv('PUB_CACHE') ?: "${System.getProperty('user.home')}/.pub-cache"
+        def kisiDir = new File("${pubCacheDir}/git").listFiles()?.find { it.name.startsWith('kisi-flutter-st2u-') }
+        if (kisiDir) {
+            maven { url "${kisiDir}/android/local-maven" }
+        }
     }
 }
+```
+
+After every `flutter pub get` or `flutter pub upgrade kisi_st2u`, re-run the setup script against the new pub-cache copy (the hash in the directory name changes with each update):
+
+```sh
+sh ~/.pub-cache/git/kisi-flutter-st2u-<hash>/scripts/setup.sh
 ```
 
 ---
